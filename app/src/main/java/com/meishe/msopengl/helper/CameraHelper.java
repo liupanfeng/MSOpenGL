@@ -131,8 +131,8 @@ public class CameraHelper implements Camera.PreviewCallback ,
             // 设置摄像头 图像传感器的角度、方向
             setPreviewOrientation(parameters);
             mCamera.setParameters(parameters);
-            cameraBuffer = new byte[mWidth * mHeight * 3 / 2];  // 请看之前讲过的的细节
-            cameraBuffer_ = new byte[mWidth * mHeight * 3 / 2]; // 请看之前讲过的的细节
+            cameraBuffer = new byte[mWidth * mHeight * 3 / 2];
+            cameraBuffer_ = new byte[mWidth * mHeight * 3 / 2];
             // 数据缓存区
             mCamera.addCallbackBuffer(cameraBuffer);
             mCamera.setPreviewCallbackWithBuffer(this);

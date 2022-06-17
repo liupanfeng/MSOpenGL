@@ -6,7 +6,8 @@ import android.hardware.Camera;
 import android.opengl.GLES20;
 import android.opengl.GLSurfaceView;
 
-import com.meishe.msopengl.MSScreenFilter;
+import com.meishe.msopengl.filter.CameraFilter;
+import com.meishe.msopengl.filter.MSScreenFilter;
 import com.meishe.msopengl.helper.CameraHelper;
 import com.meishe.msopengl.view.MSOpenGLView;
 
@@ -40,6 +41,11 @@ public class MSOpenGLRenderer implements GLSurfaceView.Renderer,
      */
     private SurfaceTexture mSurfaceTexture;
     /**
+     * FBO 离屏渲染 过滤器
+     */
+    private CameraFilter mCameraFilter;
+
+    /**
      * 过滤器
      */
     private MSScreenFilter mMSScreenFilter;
@@ -51,44 +57,50 @@ public class MSOpenGLRenderer implements GLSurfaceView.Renderer,
 
     /**
      * 通过构造函数，将GLSurfaceView传递过来
+     *
      * @param msOpenGLView
      */
     public MSOpenGLRenderer(MSOpenGLView msOpenGLView) {
-        this.mMSOpenGLView=msOpenGLView;
+        this.mMSOpenGLView = msOpenGLView;
     }
 
 
     /**
      * Surface创建时 回调此函数
+     *
      * @param gl
      * @param config
      */
     @Override
     public void onSurfaceCreated(GL10 gl, EGLConfig config) {
-        mCameraHelper=new CameraHelper((Activity) mMSOpenGLView.getContext(),
-                Camera.CameraInfo.CAMERA_FACING_FRONT,800,400);
+        mCameraHelper = new CameraHelper((Activity) mMSOpenGLView.getContext(),
+                Camera.CameraInfo.CAMERA_FACING_FRONT, 800, 400);
 
         /* 获取纹理ID 可以理解成画布*/
-        mTextureID=new int[1];
+        mTextureID = new int[1];
         /*
-        *  用来生成纹理 给纹理赋值的
-        *   1.长度 只有一个 1
-        *   2.纹理ID，是一个数组
-        *   3.offset:0 使用数组的0下标
-        * */
-        GLES20.glGenTextures(mTextureID.length,mTextureID,0);
+         *  用来生成纹理 给纹理赋值的
+         *   1.长度 只有一个 1
+         *   2.纹理ID，是一个数组
+         *   3.offset:0 使用数组的0下标
+         * */
+        GLES20.glGenTextures(mTextureID.length, mTextureID, 0);
         /*实例化纹理对象*/
-        mSurfaceTexture=new SurfaceTexture(mTextureID[0]);
+        mSurfaceTexture = new SurfaceTexture(mTextureID[0]);
         /*绑定可用帧回调监听*/
         mSurfaceTexture.setOnFrameAvailableListener(this);
-        mMSScreenFilter =new MSScreenFilter(mMSOpenGLView.getContext());
+
+        mCameraFilter = new CameraFilter(mMSOpenGLView.getContext()); // FBO 先
+
+        mMSScreenFilter = new MSScreenFilter(mMSOpenGLView.getContext());
     }
 
     @Override
     public void onSurfaceChanged(GL10 gl, int width, int height) {
         mCameraHelper.startPreview(mSurfaceTexture);
+        mCameraFilter.onReady(width, height); // 先FBO
         /*传递宽 高给filter*/
-        mMSScreenFilter.onReady(width,height);
+        mMSScreenFilter.onReady(width, height);
     }
 
     /**
@@ -97,7 +109,7 @@ public class MSOpenGLRenderer implements GLSurfaceView.Renderer,
     @Override
     public void onDrawFrame(GL10 gl) {
         /* 每次清空之前的 清理成红色的黑板一样*/
-        glClearColor(255,0,0,0);
+        glClearColor(255, 0, 0, 0);
         /*
          * mask 细节看看此文章：https://blog.csdn.net/z136411501/article/details/83273874
          * GL_COLOR_BUFFER_BIT 颜色缓冲区
@@ -116,12 +128,22 @@ public class MSOpenGLRenderer implements GLSurfaceView.Renderer,
         /*画布，矩阵数据*/
         mSurfaceTexture.getTransformMatrix(mtx);
 
-        mMSScreenFilter.onDrawFrame(mTextureID[0],mtx);
+        mCameraFilter.setMatrix(mtx);
+        /*摄像头，矩阵，都已经做了*/
+        int textureId = mCameraFilter.onDrawFrame(mTextureID[0]);
+        /*
+        *textureId==最终成果的纹理ID
+        *最终直接显示的，他是调用了 BaseFilter的onDrawFrame渲染的（简单的显示就行了）
+        * 核心在这里：1：画布==纹理ID，
+        *  2：mtx矩阵数据
+        * */
+        mMSScreenFilter.onDrawFrame(textureId);
     }
 
     /**
      * 有可用的数据时回调此函数，比自动回调的效率高  也可以自动16.6ms回调
      * 需要手动调用一次才行
+     *
      * @param surfaceTexture
      */
     @Override
