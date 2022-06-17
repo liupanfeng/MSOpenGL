@@ -149,7 +149,7 @@ public class CameraFilter extends BaseFilter {
         /*通知 opengl 绘制*/
         glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
 
-        // 解绑 fbo
+        //FBO的关键在这里做了解绑操作
         glBindTexture(GLES11Ext.GL_TEXTURE_EXTERNAL_OES, 0);
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
