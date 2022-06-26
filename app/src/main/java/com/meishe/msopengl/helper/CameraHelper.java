@@ -201,6 +201,10 @@ public class CameraHelper implements Camera.PreviewCallback ,
     }
 
 
+    public int getCameraID() {
+        return mCameraID;
+    }
+
     /**
      * 旋转画面角度（因为默认预览是歪的，所以就需要旋转画面角度）
      * 这个只是画面的旋转，但是数据不会旋转，你还需要额外处理

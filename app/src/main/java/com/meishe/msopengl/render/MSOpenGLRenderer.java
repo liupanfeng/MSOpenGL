@@ -3,13 +3,20 @@ package com.meishe.msopengl.render;
 import android.app.Activity;
 import android.graphics.SurfaceTexture;
 import android.hardware.Camera;
+import android.opengl.EGL14;
+import android.opengl.EGLContext;
 import android.opengl.GLES20;
 import android.opengl.GLSurfaceView;
+import android.util.Log;
 
 import com.meishe.msopengl.filter.CameraFilter;
 import com.meishe.msopengl.filter.MSScreenFilter;
 import com.meishe.msopengl.helper.CameraHelper;
+import com.meishe.msopengl.record.MSMediaRecorder;
+import com.meishe.msopengl.utils.PathUtils;
 import com.meishe.msopengl.view.MSOpenGLView;
+
+import java.io.IOException;
 
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
@@ -56,6 +63,12 @@ public class MSOpenGLRenderer implements GLSurfaceView.Renderer,
     float[] mtx = new float[16];
 
     /**
+     * 录制工具
+     */
+    private MSMediaRecorder mMSMediaRecorder;
+
+
+    /**
      * 通过构造函数，将GLSurfaceView传递过来
      *
      * @param msOpenGLView
@@ -89,10 +102,16 @@ public class MSOpenGLRenderer implements GLSurfaceView.Renderer,
         mSurfaceTexture = new SurfaceTexture(mTextureID[0]);
         /*绑定可用帧回调监听*/
         mSurfaceTexture.setOnFrameAvailableListener(this);
-
-        mCameraFilter = new CameraFilter(mMSOpenGLView.getContext()); // FBO 先
-
+        /*先进行FBO离屏渲染*/
+        mCameraFilter = new CameraFilter(mMSOpenGLView.getContext());
+        /*进行预览显示*/
         mMSScreenFilter = new MSScreenFilter(mMSOpenGLView.getContext());
+
+        /* 初始化录制工具类*/
+        EGLContext eglContext = EGL14.eglGetCurrentContext();
+        mMSMediaRecorder = new MSMediaRecorder(480, 800,
+                PathUtils.getRecordVideoName(), eglContext,
+                mMSOpenGLView.getContext());
     }
 
     @Override
@@ -122,7 +141,6 @@ public class MSOpenGLRenderer implements GLSurfaceView.Renderer,
          * 绘制摄像头数据
          * 将纹理图像更新为图像流中最新的帧数据 刷新一下
          * */
-
         mSurfaceTexture.updateTexImage();
 
         /*画布，矩阵数据*/
@@ -138,16 +156,50 @@ public class MSOpenGLRenderer implements GLSurfaceView.Renderer,
         *  2：mtx矩阵数据
         * */
         mMSScreenFilter.onDrawFrame(textureId);
+
+        /*录制 对经过渲染之后的纹理进行录制*/
+        mMSMediaRecorder.encodeFrame(textureId, mSurfaceTexture.getTimestamp());
     }
 
     /**
      * 有可用的数据时回调此函数，比自动回调的效率高  也可以自动16.6ms回调
      * 需要手动调用一次才行
-     *
+     * setRenderMode(RENDERMODE_WHEN_DIRTY); 配合用
      * @param surfaceTexture
      */
     @Override
     public void onFrameAvailable(SurfaceTexture surfaceTexture) {
-        mMSOpenGLView.requestRender(); // setRenderMode(RENDERMODE_WHEN_DIRTY); 配合用
+        mMSOpenGLView.requestRender();
     }
+
+
+    /**
+     * 开始录制
+     * @param speed
+     */
+    public void startRecording(float speed) {
+        Log.e("MyGLRender", "startRecording speed:" + speed);
+        try {
+            mMSMediaRecorder.start(speed);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * 停止录制
+     */
+    public void stopRecording() {
+        Log.e("MyGLRender", "stopRecording");
+        mMSMediaRecorder.stop();
+    }
+
+    /**
+     * 进行释放操作
+     */
+    public void surfaceDestroyed() {
+        mCameraHelper.stopPreview();
+    }
+
+
 }

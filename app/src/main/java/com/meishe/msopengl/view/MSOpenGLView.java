@@ -3,7 +3,9 @@ package com.meishe.msopengl.view;
 import android.content.Context;
 import android.opengl.GLSurfaceView;
 import android.util.AttributeSet;
+import android.view.SurfaceHolder;
 
+import com.meishe.msopengl.Speed;
 import com.meishe.msopengl.render.MSOpenGLRenderer;
 
 /**
@@ -15,6 +17,12 @@ import com.meishe.msopengl.render.MSOpenGLRenderer;
  */
 public class MSOpenGLView extends GLSurfaceView {
 
+    private MSOpenGLRenderer mMsOpenGLRenderer;
+
+    private Speed mSpeed = Speed.MODE_NORMAL;
+
+
+
     public MSOpenGLView(Context context) {
         this(context,null);
     }
@@ -25,6 +33,7 @@ public class MSOpenGLView extends GLSurfaceView {
     }
 
     private void init() {
+
         /*
         * 设置EGL版本
         * 2 代表是 OpenGLES 2.0
@@ -37,7 +46,8 @@ public class MSOpenGLView extends GLSurfaceView {
         * { Renderer.onSurfaceCreated ...onSurfaceChanged  onDrawFrame }
         *
         * */
-        setRenderer(new MSOpenGLRenderer(this));
+        mMsOpenGLRenderer = new MSOpenGLRenderer(this);
+        setRenderer(mMsOpenGLRenderer);
 
         /*
         * 设置渲染器模式
@@ -47,4 +57,51 @@ public class MSOpenGLView extends GLSurfaceView {
         /*使用手动模式*/
         setRenderMode(RENDERMODE_WHEN_DIRTY);
     }
+
+    @Override
+    public void surfaceDestroyed(SurfaceHolder holder) {
+        super.surfaceDestroyed(holder);
+        mMsOpenGLRenderer.surfaceDestroyed();
+    }
+
+
+
+    public void startRecording() {
+        float speed = 1.0f;
+        switch (mSpeed){
+            case MODE_EXTRA_SLOW:
+                speed = 0.3f;
+                break;
+            case MODE_SLOW:
+                speed = 0.5f;
+                break;
+            case MODE_NORMAL:
+                speed = 1.0f;
+                break;
+            case MODE_FAST:
+                speed = 1.5f;
+                break;
+            case MODE_EXTRA_FAST:
+                speed = 3.0f;
+                break;
+        }
+        mMsOpenGLRenderer.startRecording(speed);
+    }
+
+    /**
+     * 圆形红色按钮的 按住拍 的 录制完成
+     */
+    public void stopRecording() {
+        mMsOpenGLRenderer.stopRecording();
+    }
+
+
+    /**
+     * 极慢 慢 标准 快 极快 模式的设置函数
+     * @param modeExtraSlow 此枚举就是：极慢 慢 标准 快 极快 选项
+     */
+    public void setSpeed(Speed modeExtraSlow) {
+        mSpeed = modeExtraSlow;
+    }
+
 }
