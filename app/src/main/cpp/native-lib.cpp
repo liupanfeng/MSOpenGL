@@ -4,6 +4,10 @@
 #include <opencv2/imgproc/types_c.h>
 #include "FaceTrack.h"
 
+#include <android/log.h>
+
+#define loge(...) __android_log_print(ANDROID_LOG_ERROR,"lpf",__VA_ARGS__);
+
 /*point_detector 人脸关键点模型 关联起来*/
 
 
@@ -15,6 +19,22 @@ Java_com_meishe_msopengl_MainActivity_stringFromJNI(
     std::string hello = "Hello from C++";
     return env->NewStringUTF(hello.c_str());
 }
+
+extern "C"
+JNIEXPORT jlong JNICALL
+Java_com_meishe_msopengl_face_FaceTrack_native_1create(JNIEnv *env, jobject thiz, jstring model,
+                                                       jstring seeta) {
+    const char *model_ = env->GetStringUTFChars(model, JNI_OK);
+    const char *seeta_ = env->GetStringUTFChars(seeta, JNI_OK);
+
+    FaceTrack *faceTrack = new FaceTrack(model_, seeta_);
+    loge("create success");
+    env->ReleaseStringUTFChars(model, model_);
+    env->ReleaseStringUTFChars(seeta, seeta_);
+
+    return reinterpret_cast<jlong>(faceTrack);
+}
+
 /**
  * 开始跟踪  OpenCV开启追踪器
  */
@@ -32,8 +52,9 @@ Java_com_meishe_msopengl_face_FaceTrack_native_1detector(JNIEnv *env, jobject th
     FaceTrack *faceTrack = reinterpret_cast<FaceTrack *>(self);
     /*OpenCV旋转数据操作  摄像头数据data 转成 OpenCv的 Mat*/
     Mat src(height + height / 2, width, CV_8UC1, data);
+    loge("OpenCV旋转数据操作 success");
     /*做调试的时候用的（方便查看：有没有摆正，有没有灰度化 等）*/
-    imwrite("/sdcard/camera.jpg", src);
+//    imwrite("/sdcard/camera.jpg", src);
     /*把YUV转成RGBA*/
     cvtColor(src, src, CV_YUV2RGBA_NV21);
 
@@ -102,7 +123,7 @@ Java_com_meishe_msopengl_face_FaceTrack_native_1detector(JNIEnv *env, jobject th
             circle(src, Point2f(rects[i].x, rects[i].y), 5, Scalar(0, 255, 0));
         }
         /*做调试的时候用的（方便查看：有没有摆正，有没有灰度化 等）*/
-        imwrite("/sdcard/src.jpg", src);
+//        imwrite("/sdcard/src.jpg", src);
         /*返回 jobject == Face.java（已经有值了，有人脸所有的信息了，那么就可以开心，放大眼睛）*/
         return face;
     }
@@ -111,20 +132,7 @@ Java_com_meishe_msopengl_face_FaceTrack_native_1detector(JNIEnv *env, jobject th
 
 }
 
-extern "C"
-JNIEXPORT jlong JNICALL
-Java_com_meishe_msopengl_face_FaceTrack_native_1create(JNIEnv *env, jobject thiz, jstring model,
-                                                       jstring seeta) {
-    const char *model_ = env->GetStringUTFChars(model, JNI_OK);
-    const char *seeta_ = env->GetStringUTFChars(seeta, JNI_OK);
 
-    FaceTrack *faceTrack = new FaceTrack(model_, seeta_);
-
-    env->ReleaseStringUTFChars(model, model_);
-    env->ReleaseStringUTFChars(seeta, seeta_);
-
-    return reinterpret_cast<jlong>(faceTrack);
-}
 
 extern "C"
 JNIEXPORT void JNICALL

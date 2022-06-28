@@ -20,9 +20,15 @@ public class PathUtils {
 
     private static final String TAG = PathUtils.class.getName();
 
-    private static String SDK_FILE_ROOT_DIRECTORY = "MSOpenGL" + File.separator;
-
-    private static String RECORD_DIRECTORY = SDK_FILE_ROOT_DIRECTORY + "record";
+    private static String OPEN_GL_ROOT_DIRECTORY = "MSOpenGL" + File.separator;
+    /**
+     * 视频录制存放的路径
+     */
+    private static String RECORD_DIRECTORY = OPEN_GL_ROOT_DIRECTORY + "record";
+    /**
+     * 模型存放路径
+     */
+    private  static String MODEL_DIRECTORY = OPEN_GL_ROOT_DIRECTORY + "model";
 
     /**
      * 删除文件
@@ -88,6 +94,10 @@ public class PathUtils {
 
     public static String getRecordDir() {
         return getFolderDirPath(RECORD_DIRECTORY);
+    }
+
+    public static String getModelDir() {
+        return getFolderDirPath(MODEL_DIRECTORY);
     }
 
     public static String getRecordVideoName() {

@@ -43,9 +43,12 @@ public class FaceTrack {
      * @param cameraHelper 需要把CameraID传递给C++层
      */
     public FaceTrack(String model, String seeta, CameraHelper cameraHelper) {
+        Log.d("lpf", "model=" + model);
+        Log.d("lpf", "seeta=" + seeta);
         mCameraHelper = cameraHelper;
-        self = native_create(model, seeta); // 传入人脸检测模型到C++层处理，返回FaceTrack.cpp的地址指向
-
+        /*传入人脸检测模型到C++层处理，返回FaceTrack.cpp的地址指向*/
+        self = native_create(model, seeta);
+        Log.d("lpf", "native_create success");
         mHandlerThread = new HandlerThread("FaceTrack");
         mHandlerThread.start();
 
@@ -55,11 +58,15 @@ public class FaceTrack {
                 super.handleMessage(msg);
                 /*子线程 耗时再久 也不会对其他地方 (如：opengl绘制线程) 产生影响*/
                 synchronized (FaceTrack.this) {
-                 mFace = native_detector(self, (byte[]) msg.obj,
-                         mCameraHelper.getCameraID(),800, 480);
-                 if (mFace != null) {
-                       Log.e("拍摄了人脸mFace.toString:", mFace.toString()); // 看看打印效果
-                 }
+                    if (msg.obj == null) {
+                        Log.e("lpf", "obj is null");
+                        return;
+                    }
+                    mFace = native_detector(self, (byte[]) msg.obj,
+                            mCameraHelper.getCameraID(), 800, 480);
+                    if (mFace != null) {
+                        Log.e("拍摄了人脸mFace.toString:", mFace.toString());
+                    }
                 }
             }
         };
@@ -71,7 +78,6 @@ public class FaceTrack {
     public void startTrack() {
         native_start(self);
     }
-
 
 
     /**
@@ -86,18 +92,50 @@ public class FaceTrack {
         }
     }
 
-
-
-
+    /**
+     * 这个函数很重要
+     *
+     * @return 如果能拿到mFace，就证明有人脸最终信息 和 关键点信息
+     */
+    public Face getFace() {
+        return mFace;
+    }
 
 
     /*------------------------------------native 函数区---------------------------------------*/
 
-    private native Face native_detector(long self, byte[] obj, int cameraID, int i, int i1) ;
+    /**
+     * 执行人脸探测工作
+     *
+     * @param self     Face.java对象的地址指向long值
+     * @param data     Camera相机 byte[] data NV21摄像头的数据
+     * @param cameraId Camera相机ID，前置摄像头，后置摄像头
+     * @param width    宽度
+     * @param height   高度
+     * @return 若Face==null：代表没有人脸信息+人脸特征，  若Face有值：人脸框x/y，+ 特侦点（人脸框x/y + 双眼关键点）
+     */
+    private native Face native_detector(long self, byte[] data, int cameraId, int width, int height);
 
+    /**
+     * 传入人脸检测模型到C++层处理
+     *
+     * @param model OpenCV人脸模型
+     * @param seeta Seeta中科院的人脸关键点模型
+     * @return FaceTrack.cpp地址指向long值
+     */
     private native long native_create(String model, String seeta);
 
+    /**
+     * 开始追踪
+     *
+     * @param self
+     */
     private native void native_start(long self);
 
+    /**
+     * 停止追踪
+     *
+     * @param self
+     */
     private native void native_stop(long self);
 }

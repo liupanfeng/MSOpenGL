@@ -11,7 +11,7 @@ FaceTrack::FaceTrack(const char *model, const char *seeta) {
             makePtr<CascadeDetectorAdapter>(makePtr<CascadeClassifier>(model));
     /*OpenCV跟踪探测器*/
     Ptr<CascadeDetectorAdapter> trackingDetector=
-            makePtr<CascadeDetectorAdapter>(makePtr<CascadeClassifier>(seeta));
+            makePtr<CascadeDetectorAdapter>(makePtr<CascadeClassifier>(model));
 
     DetectionBasedTracker::Parameters detectorParams;
     /*OpenCV创建追踪器，开始跟踪，停止跟踪使用 */

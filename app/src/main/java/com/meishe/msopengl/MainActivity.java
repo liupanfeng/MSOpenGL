@@ -3,6 +3,7 @@ package com.meishe.msopengl;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.os.Bundle;
+import android.widget.CompoundButton;
 import android.widget.RadioGroup;
 import android.widget.Toast;
 
@@ -52,22 +53,34 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onCheckedChanged(RadioGroup group, int checkedId) {
                 switch (checkedId) {
-                    case R.id.rbtn_record_speed_extra_slow: // 极慢
+                    /*极慢*/
+                    case R.id.rbtn_record_speed_extra_slow:
                         mBinding.glSurfaceView.setSpeed(Speed.MODE_EXTRA_SLOW);
                         break;
-                    case R.id.rbtn_record_speed_slow:   // 慢
+                        /*慢*/
+                    case R.id.rbtn_record_speed_slow:
                         mBinding.glSurfaceView.setSpeed(Speed.MODE_SLOW);
                         break;
-                    case R.id.rbtn_record_speed_normal: // 正常 标准
+                        /*正常 标准*/
+                    case R.id.rbtn_record_speed_normal:
                         mBinding.glSurfaceView.setSpeed(Speed.MODE_NORMAL);
                         break;
-                    case R.id.rbtn_record_speed_fast:   // 快
+                        /* 快*/
+                    case R.id.rbtn_record_speed_fast:
                         mBinding.glSurfaceView.setSpeed(Speed.MODE_FAST);
                         break;
-                    case R.id.rbtn_record_speed_extra_fast: // 极快
+                        /*极快*/
+                    case R.id.rbtn_record_speed_extra_fast:
                         mBinding.glSurfaceView.setSpeed(Speed.MODE_EXTRA_FAST);
                         break;
                 }
+            }
+        });
+
+        mBinding.chkBigeye.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                mBinding.glSurfaceView.enableBigEye(isChecked);
             }
         });
     }

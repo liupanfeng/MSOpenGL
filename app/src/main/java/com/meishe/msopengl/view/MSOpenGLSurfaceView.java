@@ -104,4 +104,11 @@ public class MSOpenGLSurfaceView extends GLSurfaceView {
         mSpeed = modeExtraSlow;
     }
 
+    /**
+     * 是否启动大眼功能
+     * @param isChecked
+     */
+    public void enableBigEye(boolean isChecked) {
+        mMsOpenGLRenderer.enableBigEye(isChecked);
+    }
 }

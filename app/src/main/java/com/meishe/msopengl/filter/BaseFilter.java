@@ -14,6 +14,7 @@ import static android.opengl.GLES20.GL_TEXTURE_2D;
 import static android.opengl.GLES20.GL_TRIANGLE_STRIP;
 import static android.opengl.GLES20.glActiveTexture;
 import static android.opengl.GLES20.glBindTexture;
+import static android.opengl.GLES20.glDeleteProgram;
 import static android.opengl.GLES20.glDeleteShader;
 import static android.opengl.GLES20.glDrawArrays;
 import static android.opengl.GLES20.glEnableVertexAttribArray;
@@ -71,7 +72,12 @@ public class BaseFilter {
     protected int mWidth;
     protected int mHeight;
 
-
+    /**
+     *
+     * @param context
+     * @param vertexSourceId  顶点着色器
+     * @param fragmentSourceId 片元着色器
+     */
     public BaseFilter(Context context, int vertexSourceId, int fragmentSourceId) {
         /*子类传递过来的顶点着色器ID*/
         this.mVertexSourceId = vertexSourceId;
@@ -199,5 +205,19 @@ public class BaseFilter {
         /* 返回纹理ID，可以告诉下一个过滤器  通过纹理id的传递就可以连续的绘制特效了*/
         return textureId;
     }
+
+
+    /**
+     * 修改纹理坐标 textureData（有需求可以重写该方法）
+     */
+    protected void changeTextureData(){
+
+    }
+
+
+    public void release(){
+        glDeleteProgram(mProgramId);
+    }
+
 
 }

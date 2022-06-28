@@ -113,14 +113,22 @@ public class MSEGL {
         EGLConfig[] configs = new EGLConfig[1];
         int[] num_config = new int[1];
         if (!eglChooseConfig(
-                mEGLDisplay,      // EGL显示链接
-                attrib_list,      // 属性列表
-                0,  // attrib_list 从数组第零个下标开始找
-                configs,          // 输出的配置选项成果
-                0,     // configs 从数组第零个下标开始找
-                configs.length,   // 配置的数量，只有一个
-                num_config,       // 需要的配置int数组，他需要什么就给他什么
-                0  // num_config 从数组第零个下标开始找
+                /*EGL显示链接*/
+                mEGLDisplay,
+                /*属性列表*/
+                attrib_list,
+                /*attrib_list 从数组第零个下标开始找*/
+                0,
+                /*输出的配置选项成果*/
+                configs,
+                /*configs 从数组第零个下标开始找*/
+                0,
+                /*配置的数量，只有一个*/
+                configs.length,
+                /*需要的配置int数组*/
+                num_config,
+                /*num_config 从数组第零个下标开始找*/
+                0
         )) {
             throw new RuntimeException("eglChooseConfig fail");
         }

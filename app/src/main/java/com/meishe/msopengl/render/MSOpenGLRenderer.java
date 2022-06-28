@@ -9,12 +9,17 @@ import android.opengl.GLES20;
 import android.opengl.GLSurfaceView;
 import android.util.Log;
 
+import com.meishe.msopengl.face.FaceTrack;
+import com.meishe.msopengl.filter.BigEyeFilter;
 import com.meishe.msopengl.filter.CameraFilter;
 import com.meishe.msopengl.filter.MSScreenFilter;
 import com.meishe.msopengl.helper.CameraHelper;
 import com.meishe.msopengl.record.MSMediaRecorder;
+import com.meishe.msopengl.utils.FileUtil;
 import com.meishe.msopengl.utils.PathUtils;
 import com.meishe.msopengl.view.MSOpenGLSurfaceView;
+
+import java.io.File;
 
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
@@ -31,6 +36,15 @@ import static android.opengl.GLES20.glClearColor;
  */
 public class MSOpenGLRenderer implements GLSurfaceView.Renderer,
         SurfaceTexture.OnFrameAvailableListener {
+    /**
+     * 人脸模型名称
+     */
+    private static final String FACE_MODEL_NAME="lbpcascade_frontalface.xml";
+    /**
+     * 点位模型名称
+     */
+    private static final String FACE_POINT_MODEL_NAME="seeta_fa_v1.1.bin";
+
 
     private MSOpenGLSurfaceView mMSOpenGLView;
     /**
@@ -65,6 +79,19 @@ public class MSOpenGLRenderer implements GLSurfaceView.Renderer,
      */
     private MSMediaRecorder mMSMediaRecorder;
 
+    private int mWidth;
+    private int mHeight;
+
+
+
+    /**
+     * 大眼过滤器
+     */
+    private BigEyeFilter mBigEyeFilter;
+    /**
+     * 人脸通道，包含人脸信息
+     */
+    private FaceTrack mFaceTrack;
 
     /**
      * 通过构造函数，将GLSurfaceView传递过来
@@ -73,12 +100,19 @@ public class MSOpenGLRenderer implements GLSurfaceView.Renderer,
      */
     public MSOpenGLRenderer(MSOpenGLSurfaceView msOpenGLView) {
         this.mMSOpenGLView = msOpenGLView;
+
+        /*OpenCV的模型*/
+        FileUtil.copyAssets2SDCard(mMSOpenGLView.getContext(), FACE_MODEL_NAME,
+                PathUtils.getModelDir()+ File.separator+FACE_MODEL_NAME);
+
+        /* 中科院的模型*/
+        FileUtil.copyAssets2SDCard(mMSOpenGLView.getContext(), FACE_POINT_MODEL_NAME,
+                PathUtils.getModelDir()+ File.separator+FACE_POINT_MODEL_NAME);
     }
 
 
     /**
      * Surface创建时 回调此函数
-     *
      * @param gl
      * @param config
      */
@@ -91,9 +125,9 @@ public class MSOpenGLRenderer implements GLSurfaceView.Renderer,
         mTextureID = new int[1];
         /*
          *  用来生成纹理 给纹理赋值的
-         *   1.长度 只有一个 1
-         *   2.纹理ID，是一个数组
-         *   3.offset:0 使用数组的0下标
+         *  长度 只有一个 1
+         *   纹理ID，是一个数组
+         *   offset:0 使用数组的0下标
          * */
         GLES20.glGenTextures(mTextureID.length, mTextureID, 0);
         /*实例化纹理对象*/
@@ -116,8 +150,22 @@ public class MSOpenGLRenderer implements GLSurfaceView.Renderer,
 
     @Override
     public void onSurfaceChanged(GL10 gl, int width, int height) {
+
+        mWidth = width;
+        mHeight = height;
+
+
+        /*创建人脸检测跟踪器*/
+        mFaceTrack = new FaceTrack(PathUtils.getModelDir()+ File.separator+FACE_MODEL_NAME,
+                PathUtils.getModelDir()+File.separator+FACE_POINT_MODEL_NAME,
+                mCameraHelper);
+        /*启动跟踪器*/
+        mFaceTrack.startTrack();
+
+
         mCameraHelper.startPreview(mSurfaceTexture);
-        mCameraFilter.onReady(width, height); // 先FBO
+        /* 先FBO*/
+        mCameraFilter.onReady(width, height);
         /*传递宽 高给filter*/
         mMSScreenFilter.onReady(width, height);
     }
@@ -149,6 +197,15 @@ public class MSOpenGLRenderer implements GLSurfaceView.Renderer,
         mCameraFilter.setMatrix(mtx);
         /*摄像头，矩阵，都已经做了*/
         int textureId = mCameraFilter.onDrawFrame(mTextureID[0]);
+
+        /*
+        * 绘制大眼
+        * */
+        if (null != mBigEyeFilter) {
+            mBigEyeFilter.setFace(mFaceTrack.getFace());
+            textureId = mBigEyeFilter.onDrawFrame(textureId);
+        }
+
         /*
         *textureId==最终成果的纹理ID
         *最终直接显示的，他是调用了 BaseFilter的onDrawFrame渲染的（简单的显示就行了）
@@ -160,6 +217,13 @@ public class MSOpenGLRenderer implements GLSurfaceView.Renderer,
         /*录制 对经过渲染之后的纹理进行录制*/
         mMSMediaRecorder.encodeFrame(textureId, mSurfaceTexture.getTimestamp());
     }
+
+    public void surfaceDestroyed() {
+        mCameraHelper.stopPreview();
+        /*停止跟踪器*/
+        mFaceTrack.stopTrack();
+    }
+
 
     /**
      * 有可用的数据时回调此函数，比自动回调的效率高  也可以自动16.6ms回调
@@ -194,12 +258,20 @@ public class MSOpenGLRenderer implements GLSurfaceView.Renderer,
         mMSMediaRecorder.stop();
     }
 
-    /**
-     * 进行释放操作
-     */
-    public void surfaceDestroyed() {
-        mCameraHelper.stopPreview();
+
+
+    public void enableBigEye(boolean isChecked) {
+        mMSOpenGLView.queueEvent(new Runnable() {
+            @Override
+            public void run() {
+                if (isChecked){
+                    mBigEyeFilter = new BigEyeFilter(mMSOpenGLView.getContext());
+                    mBigEyeFilter.onReady(mWidth, mHeight);
+                }else{
+                    mBigEyeFilter.release();
+                    mBigEyeFilter = null;
+                }
+            }
+        });
     }
-
-
 }

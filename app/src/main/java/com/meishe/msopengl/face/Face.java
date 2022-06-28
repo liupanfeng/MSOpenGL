@@ -29,11 +29,22 @@ public class Face {
      *     10下标（保存：右边嘴角y）
      */
     public float[] landmarks;
-
-    public int width;        // 保存人脸的框 的宽度
-    public int height;       // 保存人脸的框 的高度
-    public int imgWidth;    // 送去检测的所有宽 屏幕
-    public int imgHeight;   // 送去检测的所有高 屏幕
+    /**
+     * 保存人脸的框 的宽度
+     */
+    public int width;
+    /**
+     * 保存人脸的框 的高度
+     */
+    public int height;
+    /**
+     * 送去检测的所有宽 屏幕
+     */
+    public int imgWidth;
+    /**
+     *  送去检测的所有高 屏幕
+     */
+    public int imgHeight;
 
     public Face(int width, int height, int imgWidth, int imgHeight, float[] landmarks) {
         this.landmarks = landmarks;
