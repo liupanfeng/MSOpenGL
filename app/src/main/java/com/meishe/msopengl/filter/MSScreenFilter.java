@@ -46,7 +46,7 @@ import static android.opengl.GLES20.glViewport;
  * @author : lpf
  * @FileName: MSScreenFilter
  * @Date: 2022/6/16 13:18
- * @Description:  显示到 GLSurfaceView 屏幕
+ * @Description:  显示到 GLSurfaceView 屏幕 与着色器建立联系
  * 将大部分代码逻辑抽取到了基类，所以注释了大部分代码逻辑
  */
 public class MSScreenFilter extends BaseFilter{

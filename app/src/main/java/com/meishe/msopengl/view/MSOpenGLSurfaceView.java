@@ -15,7 +15,7 @@ import com.meishe.msopengl.render.MSOpenGLRenderer;
  * @Description:  显示Camera预览的画面（OpenGL的处理）
  *  也可以通过继承SurfaceView来实现，不过需要自己处理EGL部分内容，很复杂
  */
-public class MSOpenGLView extends GLSurfaceView {
+public class MSOpenGLSurfaceView extends GLSurfaceView {
 
     private MSOpenGLRenderer mMsOpenGLRenderer;
 
@@ -23,11 +23,11 @@ public class MSOpenGLView extends GLSurfaceView {
 
 
 
-    public MSOpenGLView(Context context) {
+    public MSOpenGLSurfaceView(Context context) {
         this(context,null);
     }
 
-    public MSOpenGLView(Context context, AttributeSet attrs) {
+    public MSOpenGLSurfaceView(Context context, AttributeSet attrs) {
         super(context, attrs);
         init();
     }

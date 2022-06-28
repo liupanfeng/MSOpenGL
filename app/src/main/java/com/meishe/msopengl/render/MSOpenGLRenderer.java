@@ -14,9 +14,7 @@ import com.meishe.msopengl.filter.MSScreenFilter;
 import com.meishe.msopengl.helper.CameraHelper;
 import com.meishe.msopengl.record.MSMediaRecorder;
 import com.meishe.msopengl.utils.PathUtils;
-import com.meishe.msopengl.view.MSOpenGLView;
-
-import java.io.IOException;
+import com.meishe.msopengl.view.MSOpenGLSurfaceView;
 
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
@@ -34,7 +32,7 @@ import static android.opengl.GLES20.glClearColor;
 public class MSOpenGLRenderer implements GLSurfaceView.Renderer,
         SurfaceTexture.OnFrameAvailableListener {
 
-    private MSOpenGLView mMSOpenGLView;
+    private MSOpenGLSurfaceView mMSOpenGLView;
     /**
      * 相机预览帮助类
      */
@@ -73,7 +71,7 @@ public class MSOpenGLRenderer implements GLSurfaceView.Renderer,
      *
      * @param msOpenGLView
      */
-    public MSOpenGLRenderer(MSOpenGLView msOpenGLView) {
+    public MSOpenGLRenderer(MSOpenGLSurfaceView msOpenGLView) {
         this.mMSOpenGLView = msOpenGLView;
     }
 
@@ -109,8 +107,10 @@ public class MSOpenGLRenderer implements GLSurfaceView.Renderer,
 
         /* 初始化录制工具类*/
         EGLContext eglContext = EGL14.eglGetCurrentContext();
+        String recordVideoName = PathUtils.getRecordVideoName();
+        Log.d("lpf","recordVideoName="+recordVideoName);
         mMSMediaRecorder = new MSMediaRecorder(480, 800,
-                PathUtils.getRecordVideoName(), eglContext,
+                recordVideoName, eglContext,
                 mMSOpenGLView.getContext());
     }
 

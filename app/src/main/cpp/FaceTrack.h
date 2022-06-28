@@ -78,7 +78,6 @@ private:
     Ptr<seeta::FaceAlignment> faceAlignment;
 };
 
-};
 
 
 #endif //MSOPENGL_FACETRACK_H

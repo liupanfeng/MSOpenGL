@@ -15,6 +15,7 @@ import android.view.Surface;
 import androidx.annotation.RequiresApi;
 
 import java.io.IOException;
+import java.nio.ByteBuffer;
 
 /**
  * @author : lpf
@@ -131,8 +132,11 @@ public class MSMediaRecorder {
         /*配置编码器*/
         mMediaCodec.configure(videoFormat,
                 null, null, MediaCodec.CONFIGURE_FLAG_ENCODE);
-        /*创建输入 Surface（虚拟屏幕）*/
+
+        /*创建输入 Surface（虚拟屏幕）  这里是关键，这个代替了输入Buffer的部分*/
         mInputSurface = mMediaCodec.createInputSurface();
+
+
         /*创建封装器*/
         mMediaMuxer = new MediaMuxer(mOutputPath,
                 MediaMuxer.OutputFormat.MUXER_OUTPUT_MPEG_4);
@@ -168,8 +172,8 @@ public class MSMediaRecorder {
                         mMediaCodec.release();
                         mMediaCodec = null;
                     }
-
-                    if (mMediaMuxer != null) { // 封装器 释放掉
+                    /*封装器 释放掉*/
+                    if (mMediaMuxer != null) {
                         try {
                             mMediaMuxer.stop();
                             mMediaMuxer.release();
@@ -183,8 +187,8 @@ public class MSMediaRecorder {
                         mInputSurface.release();
                         mInputSurface = null;
                     }
-
-                    mEGL.release(); // EGL中间件 释放掉
+                    /* EGL中间件 释放*/
+                    mEGL.release();
                     mEGL = null;
                     mHandler.getLooper().quitSafely();
                     mHandler.removeCallbacksAndMessages(null);
@@ -205,7 +209,53 @@ public class MSMediaRecorder {
             /*使输出缓冲区出列，最多阻止“timeoutUs”微秒。*/
             int status = mMediaCodec.
                     dequeueOutputBuffer(bufferInfo, 10_000);
+            if (status == MediaCodec.INFO_TRY_AGAIN_LATER) { /*稍后再试*/
+                if (!endOfStream) {
+                    break;
+                }
+            } else if (status == MediaCodec.INFO_OUTPUT_FORMAT_CHANGED) {/* 输出格式已更改*/
+                MediaFormat outputFormat = mMediaCodec.getOutputFormat();
+                index = mMediaMuxer.addTrack(outputFormat);
+                mMediaMuxer.start();
+            } else if(status == MediaCodec.INFO_OUTPUT_BUFFERS_CHANGED){
+                /*暂时不做处理*/
+            }else{/*成功取到一个有效数据*/
+                ByteBuffer outputBuffer = mMediaCodec.getOutputBuffer(status);
+                if (null == outputBuffer){
+                    throw new RuntimeException("getOutputBuffer fail");
+                }
 
+                if ((bufferInfo.flags & MediaCodec.BUFFER_FLAG_CODEC_CONFIG) != 0){
+                    /*如果是配置信息*/
+                    bufferInfo.size = 0;
+                }
+                /*开始写入操作*/
+                if(bufferInfo.size != 0){
+                    /*这里对速率添加影响*/
+                    bufferInfo.presentationTimeUs = (long)(bufferInfo.presentationTimeUs / mSpeed);
+                    /*对边界进行兼容*/
+                    if(bufferInfo.presentationTimeUs <= lastTimeUs){
+                        bufferInfo.presentationTimeUs = (long)(lastTimeUs + 1_000_000 /25/mSpeed);
+                    }
+                    lastTimeUs = bufferInfo.presentationTimeUs;
+                    /*偏移位置*/
+                    outputBuffer.position(bufferInfo.offset);
+                    /*可读写的总长度*/
+                    outputBuffer.limit(bufferInfo.offset + bufferInfo.size);
+
+                    try{
+                        mMediaMuxer.writeSampleData(index,outputBuffer,bufferInfo);
+                    }catch (Exception e){
+                        e.printStackTrace();
+                    }
+                }
+                /*释放输出缓冲区*/
+                mMediaCodec.releaseOutputBuffer(status, false);
+                /*编码结束*/
+                if ((bufferInfo.flags & MediaCodec.BUFFER_FLAG_END_OF_STREAM) != 0){
+                    break;
+                }
+            }
         }
 
     }
