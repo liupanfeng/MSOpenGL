@@ -1,6 +1,3 @@
-//
-// Created by 刘静盼 on 2022/6/26.
-//
 
 #include "FaceTrack.h"
 
@@ -34,6 +31,7 @@ void FaceTrack::detector(Mat src, vector<Rect2f> &rects) {
     /*得到人脸框框的Rect */
     tracker->getObjects(faces);
 
+    loge("face size=%d",faces.size());
     /*判断true，说明非零，有人脸*/
     if (faces.size()) {
         Rect face = faces[0];

@@ -35,7 +35,7 @@ import static android.opengl.GLES20.glClearColor;
  * @Description: openGL 渲染器
  */
 public class MSOpenGLRenderer implements GLSurfaceView.Renderer,
-        SurfaceTexture.OnFrameAvailableListener {
+        SurfaceTexture.OnFrameAvailableListener, Camera.PreviewCallback {
     /**
      * 人脸模型名称
      */
@@ -120,7 +120,7 @@ public class MSOpenGLRenderer implements GLSurfaceView.Renderer,
     public void onSurfaceCreated(GL10 gl, EGLConfig config) {
         mCameraHelper = new CameraHelper((Activity) mMSOpenGLView.getContext(),
                 Camera.CameraInfo.CAMERA_FACING_FRONT, 800, 400);
-
+        mCameraHelper.setPreviewCallback(this);
         /* 获取纹理ID 可以理解成画布*/
         mTextureID = new int[1];
         /*
@@ -154,6 +154,7 @@ public class MSOpenGLRenderer implements GLSurfaceView.Renderer,
         mWidth = width;
         mHeight = height;
 
+        Log.d("lpf","onSurfaceChanged width="+width+" height="+height);
 
         /*创建人脸检测跟踪器*/
         mFaceTrack = new FaceTrack(PathUtils.getModelDir()+ File.separator+FACE_MODEL_NAME,
@@ -273,5 +274,15 @@ public class MSOpenGLRenderer implements GLSurfaceView.Renderer,
                 }
             }
         });
+    }
+
+
+    @Override
+    public void onPreviewFrame(byte[] data, Camera camera) {
+        /*NV21 数据传递*/
+        if (mFaceTrack!=null){
+            mFaceTrack.detector(data,mWidth,mHeight);
+        }
+
     }
 }

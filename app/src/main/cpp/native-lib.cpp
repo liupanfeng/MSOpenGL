@@ -4,9 +4,7 @@
 #include <opencv2/imgproc/types_c.h>
 #include "FaceTrack.h"
 
-#include <android/log.h>
-
-#define loge(...) __android_log_print(ANDROID_LOG_ERROR,"lpf",__VA_ARGS__);
+#include "log_util.h"
 
 /*point_detector 人脸关键点模型 关联起来*/
 
@@ -52,12 +50,13 @@ Java_com_meishe_msopengl_face_FaceTrack_native_1detector(JNIEnv *env, jobject th
     FaceTrack *faceTrack = reinterpret_cast<FaceTrack *>(self);
     /*OpenCV旋转数据操作  摄像头数据data 转成 OpenCv的 Mat*/
     Mat src(height + height / 2, width, CV_8UC1, data);
-    loge("OpenCV旋转数据操作 success");
+
     /*做调试的时候用的（方便查看：有没有摆正，有没有灰度化 等）*/
-//    imwrite("/sdcard/camera.jpg", src);
+    imwrite("/sdcard/camera.jpg", src);
+//    loge("把YUV转成RGBA start");
     /*把YUV转成RGBA*/
     cvtColor(src, src, CV_YUV2RGBA_NV21);
-
+//    loge("把YUV转成RGBA success");
     if (camera_id == 1) {
         /*前摄*/
         /*逆时针90度*/
@@ -68,14 +67,17 @@ Java_com_meishe_msopengl_face_FaceTrack_native_1detector(JNIEnv *env, jobject th
         /*后摄*/
         rotate(src, src, ROTATE_90_CLOCKWISE);
     }
-
+//    loge("OpenCV基础操作  灰度化 start");
     /* OpenCV基础操作  灰度化*/
     cvtColor(src, src, COLOR_RGBA2GRAY);
     /*均衡化处理（直方图均衡化，增强对比效果）*/
     equalizeHist(src, src);
     vector<Rect2f> rects;
+//    loge("detector start");
+    imwrite("/sdcard/detector.jpg", src);
     /*送去定位，要去做人脸的检测跟踪了*/
     faceTrack->detector(src, rects);
+//    loge("detector success");
     env->ReleaseByteArrayElements(data_, data, 0);
 
     /*他已经有丰富的人脸框框的信息，接下来就是，关键点定位封装操作Face.java*/
@@ -91,6 +93,7 @@ Java_com_meishe_msopengl_face_FaceTrack_native_1detector(JNIEnv *env, jobject th
     /*如果有一个人脸，那么size肯定大于0*/
     int ret = rects.size();
 
+    loge("imgWidth=%d imgHeight=%d  ret=%d",imgWidth,imgHeight,ret);
     if (ret) {
         /*有人脸信息*/
         jclass clazz = env->FindClass("com/meishe/msopengl/face/Face");

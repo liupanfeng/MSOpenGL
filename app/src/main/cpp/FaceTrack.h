@@ -11,6 +11,7 @@
 /*人脸关键点各个信息保存的容器*/
 #include <vector>
 
+#include "log_util.h"
 
 using namespace std;
 using namespace cv;

@@ -37,6 +37,11 @@ public class FaceTrack {
      */
     private Face mFace;
 
+
+    private int mWidth;
+    private int mHeight;
+
+
     /**
      * @param model        OpenCV人脸的模型的文件路径
      * @param seeta        中科院的那个模型（五个关键点的特征点的文件路径）
@@ -62,8 +67,10 @@ public class FaceTrack {
                         Log.e("lpf", "obj is null");
                         return;
                     }
+
+                    Log.e("lpf", "native_detector start mWidth="+mWidth+" mHeight="+mHeight);
                     mFace = native_detector(self, (byte[]) msg.obj,
-                            mCameraHelper.getCameraID(), 800, 480);
+                            mCameraHelper.getCameraID(), 1080, 1684);
                     if (mFace != null) {
                         Log.e("拍摄了人脸mFace.toString:", mFace.toString());
                     }
@@ -99,6 +106,19 @@ public class FaceTrack {
      */
     public Face getFace() {
         return mFace;
+    }
+
+    /**
+     * @param data NV21 Camera的数据 byte[]
+     */
+    public void detector(byte[] data, int width, int height) {
+        mWidth = width;
+        mHeight = height;
+        Log.e("lpf","mWidth="+mWidth+" mHeight="+mHeight);
+        mHandler.removeMessages(100);
+        Message message = mHandler.obtainMessage(100);
+        message.obj = data;
+        mHandler.sendMessage(message);
     }
 
 
