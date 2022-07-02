@@ -10,26 +10,25 @@ import android.widget.Toast;
 import com.hjq.permissions.OnPermissionCallback;
 import com.hjq.permissions.Permission;
 import com.hjq.permissions.XXPermissions;
-import com.meishe.msopengl.databinding.ActivityMainBinding;
-import com.meishe.msopengl.view.MSOpenGLSurfaceView;
+import com.meishe.msopengl.databinding.ActivityCaptureBinding;
 import com.meishe.msopengl.view.MSRecordButton;
 
 import java.util.List;
 
-public class MainActivity extends AppCompatActivity {
+public class CaptureActivity extends AppCompatActivity {
 
     // Used to load the 'knative-lib' library on application startup.
     static {
         System.loadLibrary("native-lib");
     }
 
-    private ActivityMainBinding mBinding;
+    private ActivityCaptureBinding mBinding;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        mBinding = ActivityMainBinding.inflate(getLayoutInflater());
+        mBinding = ActivityCaptureBinding.inflate(getLayoutInflater());
         setContentView(mBinding.getRoot());
         requestPermission();
         initListener();
@@ -45,7 +44,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onStopRecording() {
                 mBinding.glSurfaceView.stopRecording();
-                Toast.makeText(MainActivity.this, "录制完成！", Toast.LENGTH_SHORT).show();
+                Toast.makeText(CaptureActivity.this, "录制完成！", Toast.LENGTH_SHORT).show();
             }
         });
 
