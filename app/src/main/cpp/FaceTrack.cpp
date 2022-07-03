@@ -31,6 +31,10 @@ void FaceTrack::detector(Mat src, vector<Rect2f> &rects) {
     /*得到人脸框框的Rect */
     tracker->getObjects(faces);
 
+    for (Rect face:faces) {
+        rectangle(src, face, Scalar(255, 0, 255));
+    }
+
     loge("face size=%d",faces.size());
     /*判断true，说明非零，有人脸*/
     if (faces.size()) {

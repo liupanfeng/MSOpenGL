@@ -68,11 +68,11 @@ public:
      */
     void stopTracking();
 
+/**
+ * OpenCV的人脸追踪器
+ */
+Ptr<DetectionBasedTracker> tracker;
 private:
-    /**
-     * OpenCV的人脸追踪器
-     */
-    Ptr<DetectionBasedTracker> tracker;
     /**
      * Seeta中科院的人脸关键点
      */

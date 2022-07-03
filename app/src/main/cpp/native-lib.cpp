@@ -49,7 +49,7 @@ Java_com_meishe_msopengl_face_FaceTrack_native_1detector(JNIEnv *env, jobject th
     /*通过地址反转CPP对象*/
     FaceTrack *faceTrack = reinterpret_cast<FaceTrack *>(self);
     /*OpenCV旋转数据操作  摄像头数据data 转成 OpenCv的 Mat*/
-    Mat src(height + height / 2, width, CV_8UC1, data);
+    Mat src(height + height / 2, width, CV_8UC1, data); // 摄像头数据data 转成 OpenCv的 Mat
 
     /*做调试的时候用的（方便查看：有没有摆正，有没有灰度化 等）*/
     imwrite("/sdcard/camera.jpg", src);
@@ -68,16 +68,91 @@ Java_com_meishe_msopengl_face_FaceTrack_native_1detector(JNIEnv *env, jobject th
         rotate(src, src, ROTATE_90_CLOCKWISE);
     }
 //    loge("OpenCV基础操作  灰度化 start");
+    Mat gray;
     /* OpenCV基础操作  灰度化*/
-    cvtColor(src, src, COLOR_RGBA2GRAY);
+    cvtColor(src, gray, COLOR_RGBA2GRAY);
     /*均衡化处理（直方图均衡化，增强对比效果）*/
-    equalizeHist(src, src);
+    equalizeHist(gray, gray);
     vector<Rect2f> rects;
 //    loge("detector start");
-    imwrite("/sdcard/detector.jpg", src);
+    imwrite("/sdcard/detector.jpg", gray);
     /*送去定位，要去做人脸的检测跟踪了*/
-    faceTrack->detector(src, rects);
-//    loge("detector success");
+//    faceTrack->detector(src, rects);
+
+
+    ///////////////////////////////////////////////////
+
+    faceTrack->tracker->process(gray);
+
+    std::vector<Rect> faces;
+    faceTrack->tracker->getObjects(faces);
+    loge("faces size is --------------------%d",faces.size());
+    for (Rect face:faces) {
+        rectangle(src, face, Scalar(255, 0, 255));
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    ///////////////////////////////////////////////////////
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     env->ReleaseByteArrayElements(data_, data, 0);
 
     /*他已经有丰富的人脸框框的信息，接下来就是，关键点定位封装操作Face.java*/

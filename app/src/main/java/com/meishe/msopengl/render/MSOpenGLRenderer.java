@@ -27,6 +27,7 @@ import javax.microedition.khronos.opengles.GL10;
 import static android.opengl.GLES20.GL_COLOR_BUFFER_BIT;
 import static android.opengl.GLES20.glClear;
 import static android.opengl.GLES20.glClearColor;
+import static android.opengl.GLES20.glGenTextures;
 
 /**
  * @author : lpf
@@ -118,8 +119,12 @@ public class MSOpenGLRenderer implements GLSurfaceView.Renderer,
      */
     @Override
     public void onSurfaceCreated(GL10 gl, EGLConfig config) {
+
+        /**
+         * 注意这里的宽高 传的不对了，会产生花屏的问题
+         */
         mCameraHelper = new CameraHelper((Activity) mMSOpenGLView.getContext(),
-                Camera.CameraInfo.CAMERA_FACING_FRONT, 800, 400);
+                Camera.CameraInfo.CAMERA_FACING_FRONT, 800, 480);
         mCameraHelper.setPreviewCallback(this);
         /* 获取纹理ID 可以理解成画布*/
         mTextureID = new int[1];
@@ -141,6 +146,7 @@ public class MSOpenGLRenderer implements GLSurfaceView.Renderer,
 
         /* 初始化录制工具类*/
         EGLContext eglContext = EGL14.eglGetCurrentContext();
+
         String recordVideoName = PathUtils.getRecordVideoName();
         Log.d("lpf","recordVideoName="+recordVideoName);
         mMSMediaRecorder = new MSMediaRecorder(480, 800,

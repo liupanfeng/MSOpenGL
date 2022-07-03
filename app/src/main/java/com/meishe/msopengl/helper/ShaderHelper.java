@@ -41,7 +41,7 @@ public class ShaderHelper {
      * @return 着色器id(返回0表示失败）
      */
     private static int compileShader(int type, String shaderCode) {
-        //创建着色器
+        //创建着色器  shaderObjectId：指向着色器对象的句柄
         final int shaderObjectId = glCreateShader(type);
         if (shaderObjectId == 0) {
             if(DEBUG) Log.w(TAG, "创建着色器失败");

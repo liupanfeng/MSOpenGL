@@ -118,7 +118,7 @@ public class CameraHelper implements Camera.PreviewCallback ,
      * 开始预览
      */
     public void startPreview(SurfaceTexture surfaceTexture) {
-        mSurfaceTexture = surfaceTexture; // TODO 新增点 重点
+        mSurfaceTexture = surfaceTexture;
         try {
             // 获得camera对象
             mCamera = Camera.open(mCameraID);
@@ -252,54 +252,6 @@ public class CameraHelper implements Camera.PreviewCallback ,
         mCamera.setDisplayOrientation(result);
     }
 
-
-    /**
-     * 把nv21的数据进行旋转90度操作
-     * @param data Camera画面预览的原始数据
-     */
-    private void rotation90(byte[] data) {
-        int index = 0;
-        int ySize = mWidth * mHeight;
-        // u和v
-        int uvHeight = mHeight / 2;
-        // 后置摄像头顺时针旋转90度
-        if (mCameraID == Camera.CameraInfo.CAMERA_FACING_BACK) {
-            //将y的数据旋转之后 放入新的byte数组
-            for (int i = 0; i < mWidth; i++) {
-                for (int j = mHeight - 1; j >= 0; j--) {
-                    cameraBuffer_[index++] = data[mWidth * j + i];
-                }
-            }
-
-            // 每次处理两个数据
-            for (int i = 0; i < mWidth; i += 2) {
-                for (int j = uvHeight - 1; j >= 0; j--) {
-                    // v
-                    cameraBuffer_[index++] = data[ySize + mWidth * j + i];
-                    // u
-                    cameraBuffer_[index++] = data[ySize + mWidth * j + i + 1];
-                }
-            }
-        } else {
-            // 逆时针旋转90度
-            for (int i = 0; i < mWidth; i++) {
-                for (int j = 0; j < mHeight; j++) {
-                    cameraBuffer_[index++] = data[mWidth * j + mWidth - 1 - i];
-                }
-            }
-            //  u v
-            for (int i = 0; i < mWidth; i += 2) {
-                for (int j = 0; j < uvHeight; j++) {
-                    cameraBuffer_[index++] = data[ySize + mWidth * j + mWidth - 1 - i - 1];
-                    cameraBuffer_[index++] = data[ySize + mWidth * j + mWidth - 1 - i];
-                }
-            }
-        }
-    }
-
-
-
-
     public void setPreviewCallback(Camera.PreviewCallback previewCallback) { // 此函数没有外界调用，代表外界没有使用到Camera预览的数据NV21
         mPreviewCallback = previewCallback;
     }
@@ -323,19 +275,10 @@ public class CameraHelper implements Camera.PreviewCallback ,
      */
     @Override
     public void onPreviewFrame(byte[] data, Camera camera) {
-        switch (mRotation) {
-            case Surface.ROTATION_0:
-                rotation90(data);
-                break;
-            case Surface.ROTATION_90: // 横屏 左边是头部(home键在右边)
-                break;
-            case Surface.ROTATION_270:// 横屏 头部在右边
-                break;
-        }
 
         if (mPreviewCallback != null) {
-            // mPreviewCallback.onPreviewFrame(data, camera); // 以前的代码：byte[] data == nv21 ===> C++层 ---> 流媒体服务器
-            mPreviewCallback.onPreviewFrame(cameraBuffer_, camera); // 现在的代码
+             mPreviewCallback.onPreviewFrame(data, camera); // 以前的代码：byte[] data == nv21 ===> C++层 ---> 流媒体服务器
+//            mPreviewCallback.onPreviewFrame(cameraBuffer_, camera); // 现在的代码
         }
         camera.addCallbackBuffer(cameraBuffer);
 

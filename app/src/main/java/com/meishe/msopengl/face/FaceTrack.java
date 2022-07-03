@@ -70,7 +70,7 @@ public class FaceTrack {
 
                     Log.e("lpf", "native_detector start mWidth="+mWidth+" mHeight="+mHeight);
                     mFace = native_detector(self, (byte[]) msg.obj,
-                            mCameraHelper.getCameraID(), 1080, 1684);
+                            mCameraHelper.getCameraID(), 800, 400);
                     if (mFace != null) {
                         Log.e("拍摄了人脸mFace.toString:", mFace.toString());
                     }
