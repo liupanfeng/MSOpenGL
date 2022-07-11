@@ -14,7 +14,6 @@ void main() {
     // 下面的方式，是为了兼容所有All设备
     aCoord = (vMatrix * vCoord).xy;
 
-    // 部分机型有问题（早期都是这样干）
-    // aCoord = vCoord.xy;
+
 
 }

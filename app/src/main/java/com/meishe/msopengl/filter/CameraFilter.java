@@ -46,76 +46,12 @@ public class CameraFilter extends BaseFrameFilter {
         super(context, R.raw.camera_vertex, R.raw.camera_fragment);
     }
 
-//    public void onReady(int width, int height) {
-//        super.onReady(width, height);
-//
-//        /*离屏渲染*/
-//
-//        /* 创建FBO （看不见的离屏的屏幕）*/
-//
-//        mFrameBuffers = new int[1];
-//
-//        /*
-//         * 实例化创建帧缓冲区，FBO缓冲区
-//         * 参数1：int n, fbo 个数
-//         * 参数2：int[] framebuffers, 用来保存 fbo id 的数组
-//         * 参数3：int offset 从数组中第几个id来保存,从零下标开始
-//         * */
-//        glGenFramebuffers(mFrameBuffers.length, mFrameBuffers, 0);
-//
-//        /*
-//         * 创建属于 fbo 纹理(第一节课是没有配置的，但是这个是FOB纹理，所以需要配置纹理)
-//         * 既然上面的 FBO（看不见的离屏的屏幕），下面的目的就是要把画面显示到FBO中
-//         * */
-//        /*记录FBO纹理的ID*/
-//        mFrameBufferTextures = new int[1];
-//        /*生成并配置纹理*/
-//        TextureHelper.genTextures(mFrameBufferTextures);
-//
-//        /*上面的 FBO缓冲区 与 FBO纹理 还没有任何关系，现在要让他们绑定起来*/
-//        glBindTexture(GL_TEXTURE_2D, mFrameBufferTextures[0]);
-//
-//        /*生产2D纹理图像*/
-//          /*
-//           *int target,         要绑定的纹理目标
-//           *int level,          level一般都是0
-//           *int internalformat, 纹理图像内部处理的格式是什么，rgba
-//           *int width,          宽
-//           *int height,         高
-//           *int border,         边界
-//           *int format,         纹理图像格式是什么，rgba
-//           *int type,           无符号字节的类型
-//           *java.nio.Buffer pixels
-//         */
-//
-//        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, null);
-//
-//        /*绑定帧缓冲区和帧buffer*/
-//        glBindFramebuffer(GL_FRAMEBUFFER, mFrameBuffers[0]);
-//
-//        /*
-//         *   int target,     fbo的纹理目标
-//         *   int attachment, 附属到哪里
-//         *   int textarget,  要绑定的纹理目标
-//         *   int texture,    纹理
-//         *  int level       level一般都是0
-//         */
-//        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, mFrameBufferTextures[0], 0);
-//
-//        /*解绑操作*/
-//        glBindTexture(GL_TEXTURE_2D, 0);
-//        glBindFramebuffer(GL_FRAMEBUFFER, 0);
-//
-//    }
-
     /**
      * @param textureId 这里的纹理id 是摄像头的
      * @return
      */
     @Override
     public int onDrawFrame(int textureId) {
-        // 不能调用super，因为父类做的事情，和子类是很大区别的
-        // super.onDrawFrame(textureId);
 
         glViewport(0, 0, mWidth, mHeight);  // 设置视窗大小
 

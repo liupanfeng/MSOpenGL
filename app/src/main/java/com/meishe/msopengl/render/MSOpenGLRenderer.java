@@ -34,6 +34,8 @@ import static android.opengl.GLES20.glGenTextures;
  * @FileName: MSOpenGLRender
  * @Date: 2022/6/16 13:25
  * @Description: openGL 渲染器
+ *
+ * SurfaceTexture.OnFrameAvailableListener  : onFrameAvailable 有可用数据会回调这个方法
  */
 public class MSOpenGLRenderer implements GLSurfaceView.Renderer,
         SurfaceTexture.OnFrameAvailableListener, Camera.PreviewCallback {
@@ -111,7 +113,6 @@ public class MSOpenGLRenderer implements GLSurfaceView.Renderer,
                 PathUtils.getModelDir()+ File.separator+FACE_POINT_MODEL_NAME);
     }
 
-
     /**
      * Surface创建时 回调此函数
      * @param gl
@@ -137,7 +138,7 @@ public class MSOpenGLRenderer implements GLSurfaceView.Renderer,
         GLES20.glGenTextures(mTextureID.length, mTextureID, 0);
         /*实例化纹理对象*/
         mSurfaceTexture = new SurfaceTexture(mTextureID[0]);
-        /*绑定可用帧回调监听*/
+        /*绑定可用帧回调监听 SurfaceTexture.OnFrameAvailableListener*/
         mSurfaceTexture.setOnFrameAvailableListener(this);
         /*先进行FBO离屏渲染*/
         mCameraFilter = new CameraFilter(mMSOpenGLView.getContext());
@@ -171,6 +172,7 @@ public class MSOpenGLRenderer implements GLSurfaceView.Renderer,
 
 
         mCameraHelper.startPreview(mSurfaceTexture);
+
         /* 先FBO*/
         mCameraFilter.onReady(width, height);
         /*传递宽 高给filter*/
@@ -178,7 +180,7 @@ public class MSOpenGLRenderer implements GLSurfaceView.Renderer,
     }
 
     /**
-     * 绘制一帧图像时 回调此函数
+     * 这个方法进行绘制  重要方法
      */
     @Override
     public void onDrawFrame(GL10 gl) {
@@ -198,9 +200,11 @@ public class MSOpenGLRenderer implements GLSurfaceView.Renderer,
          * */
         mSurfaceTexture.updateTexImage();
 
-        /*画布，矩阵数据*/
+        /*画布，矩阵数据  这里是c的思想  这里其实就是给mtx在赋值 */
         mSurfaceTexture.getTransformMatrix(mtx);
-
+        /*
+        * 拿到矩阵数据之后，交给过滤器
+        * */
         mCameraFilter.setMatrix(mtx);
         /*摄像头，矩阵，都已经做了*/
         int textureId = mCameraFilter.onDrawFrame(mTextureID[0]);

@@ -133,15 +133,21 @@ public class CameraHelper implements Camera.PreviewCallback ,
             mCamera.setParameters(parameters);
             cameraBuffer = new byte[mWidth * mHeight * 3 / 2];
             cameraBuffer_ = new byte[mWidth * mHeight * 3 / 2];
-            // 数据缓存区
+            /*
+            * 数据缓存区
+            * */
             mCamera.addCallbackBuffer(cameraBuffer);
             mCamera.setPreviewCallbackWithBuffer(this);
-            // 设置预览画面（之前的方式：把显示的画面，渲染到SurfaceView屏幕上即可）
-            // mCamera.setPreviewDisplay(mSurfaceHolder); // SurfaceView 和 Camera绑定 ，以前音视频推流，就是这个干的
 
-            // 设置预览画面（离屏渲染） surfaceTexture纹理画布（仅仅只是缓存一份画布，不可见的画布） 配合 OpenGL渲染操作
-            // Camera相机预览数据 ---->  surfaceTexture纹理画布（不可见的画布） ---> OpenGL  ，绑定纹理
-            mCamera.setPreviewTexture(surfaceTexture); // OpenGL无法直接访问到 Camera预览数据， 他只能访问 surfaceTexture
+            /*
+            * 设置预览画面（之前的方式：把显示的画面，渲染到SurfaceView屏幕上即可）
+            * mCamera.setPreviewDisplay(mSurfaceHolder); // SurfaceView 和 Camera绑定 ，音视频推流是这么做的
+            *
+            * 设置预览画面（离屏渲染） surfaceTexture纹理画布（仅仅只是缓存一份画布，不可见的画布） 配合 OpenGL渲染操作
+            * Camera相机预览数据 ---->  surfaceTexture纹理画布（不可见的画布） ---> OpenGL  ，绑定纹理
+            * OpenGL无法直接访问到 Camera预览数据， 他只能访问 surfaceTexture
+            * */
+            mCamera.setPreviewTexture(surfaceTexture); //
 
             /*if (mOnChangedSizeListener != null) { // 你的宽和高发生改变，就会回调此接口
                 mOnChangedSizeListener.onChanged(mWidth, mHeight);

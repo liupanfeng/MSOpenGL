@@ -47,6 +47,7 @@ public class MSOpenGLSurfaceView extends GLSurfaceView {
         *
         * */
         mMsOpenGLRenderer = new MSOpenGLRenderer(this);
+
         setRenderer(mMsOpenGLRenderer);
 
         /*
@@ -65,7 +66,10 @@ public class MSOpenGLSurfaceView extends GLSurfaceView {
     }
 
 
-
+    /**
+     * 开始录制
+     * 变速录制功能
+     */
     public void startRecording() {
         float speed = 1.0f;
         switch (mSpeed){
